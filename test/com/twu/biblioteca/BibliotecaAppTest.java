@@ -12,4 +12,11 @@ public class BibliotecaAppTest {
         assertThat(bibliotecaApp.weclome_info(),is("Weclome to Biblioteca!"));
     }
 
+    @Test
+    public void should_be_return_book_info(){
+        BibliotecaApp bibliotecaApp = new BibliotecaApp();
+        bibliotecaApp.initBookList();
+        assertThat(bibliotecaApp.getBookList().size(),is(5));
+    }
+
 }
