@@ -3,7 +3,6 @@ package com.twu.biblioteca.showView;
 import com.twu.biblioteca.Book;
 import com.twu.biblioteca.Movie;
 import com.twu.biblioteca.input.InputSource;
-import com.twu.biblioteca.showView.MainView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +17,7 @@ public class ShowMainView implements MainView {
         System.out.println("3.还书");
         System.out.println("4.电影列表");
         System.out.println("5.观看电影");
+        System.out.println("6.显示用户信息");
     }
 
     @Override
@@ -29,6 +29,7 @@ public class ShowMainView implements MainView {
         userAccout.add(inputSource.getInput());
         return userAccout;
     }
+
 
     @Override
     public void showMovieListInfo(List<Movie> movieList) {

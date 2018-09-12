@@ -2,6 +2,7 @@ package com.twu.biblioteca.showView;
 
 import com.twu.biblioteca.Book;
 import com.twu.biblioteca.Movie;
+import com.twu.biblioteca.User;
 import com.twu.biblioteca.input.InputSource;
 import com.twu.biblioteca.input.ScannerInputSource;
 

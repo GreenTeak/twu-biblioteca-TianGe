@@ -20,15 +20,19 @@ public class BibliotecaApp {
     public static final String UNVAILD_CHOOSE = "Select a valid option!";
     public static final String WECLOME_APP = "welcome to Biblioteca!";
     public static final String APP_NAME = "Biblioteca";
+    public static final String LOGIN_SUCCESS = "login success!";
 
     private List<Book> bookList = new ArrayList<>();
     private List<Movie> movieList = new ArrayList<>();
     private ShowMainView mainView = new ShowMainView();
     private InputSource inputSource = new ScannerInputSource();
+    private List<User> userList = new ArrayList<>();
+    private User promptUser;
 
     public BibliotecaApp() {
         initBookList();
         initMovieList();
+        initUserList();
     }
 
     public static void main(String[] args) {
@@ -39,6 +43,7 @@ public class BibliotecaApp {
     public void showMainView() {
         mainView.showPromptMessage(WECLOME_APP);
         mainView.printMainView(APP_NAME);
+        loginApp();
         while (inputSource.hasInput()) {
             String choose = inputSource.getInput();
             if (choose.equals("q")) {
@@ -65,10 +70,26 @@ public class BibliotecaApp {
             case "5":
                 watchMovie();
                 break;
+            case "6":
+                showUserInfo();
+                break;
             default:
                 mainView.showPromptMessage(UNVAILD_CHOOSE);
                 break;
         }
+    }
+
+    public void showUserInfo(){
+        promptUser.showUserInfo();
+    }
+
+    public List<User> loginApp(){
+        List<String> userLoginInfo = mainView.getLoginInfo(inputSource);
+        List<User> collect = userList.stream().filter(user -> user.getAccountNumber().equals(userLoginInfo.get(0)) && user.getPassword().equals(userLoginInfo.get(1)))
+                .collect(Collectors.toList());
+        mainView.showPromptMessage(LOGIN_SUCCESS);
+        promptUser = new User(collect.get(0));
+        return collect;
     }
 
     public void watchMovie() {
@@ -154,6 +175,12 @@ public class BibliotecaApp {
         movieList.add(new Movie(4, "schindler's list", "1993", "Steven Spielberg", 8));
         movieList.add(new Movie(5, "the lord of the rings", "1937", "Tolkien", 8));
     }
-
+    public void initUserList(){
+        userList.add(new User(1, "xiaoming", "xiaoming@thoughtworks.com", "138919191911"));
+        userList.add(new User(1, "xiaohua", "xiaoming@thoughtworks.com", "138919191911"));
+        userList.add(new User(1, "xiaoxia", "xiaoming@thoughtworks.com", "138919191911"));
+        userList.add(new User(1, "xiaoliu", "xiaoming@thoughtworks.com", "138919191911"));
+        userList.add(new User(1, "xiaowang", "xiaoming@thoughtworks.com", "138919191911"));
+    }
 
 }
