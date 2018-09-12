@@ -1,109 +1,159 @@
 package com.twu.biblioteca;
 
+import com.twu.biblioteca.input.InputSource;
+import com.twu.biblioteca.input.ScannerInputSource;
+import com.twu.biblioteca.showView.ShowMainView;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class BibliotecaApp {
 
-    private List<Book> bookList=new ArrayList<>();
+    public static final String INPUT_BOOK_ID = "请输入书id";
+    public static final String BOOK_STATUS_INVAILD = "那本书不可用";
+    public static final String THANKS_BORROW_BOOK = "谢谢你!";
+    public static final String THANKS_RETURN_BOOK = "感谢您退回图书!";
+    public static final String BOOK_RETURN_INVALID = "这不是一本可以归还的图书";
+    public static final String INPUT_MOVIE_ID = "请输入书电影id";
+    public static final String UNVAILD_CHOOSE = "Select a valid option!";
+    public static final String WECLOME_APP = "welcome to Biblioteca!";
+    public static final String APP_NAME = "Biblioteca";
+
+    private List<Book> bookList = new ArrayList<>();
+    private List<Movie> movieList = new ArrayList<>();
+    private ShowMainView mainView = new ShowMainView();
+    private InputSource inputSource = new ScannerInputSource();
 
     public BibliotecaApp() {
         initBookList();
+        initMovieList();
     }
 
     public static void main(String[] args) {
-        Scanner scanner=new Scanner(System.in);
-        BibliotecaApp bibliotecaApp=new BibliotecaApp();
-        bibliotecaApp.main_view(scanner);
+        BibliotecaApp bibliotecaApp = new BibliotecaApp();
+        bibliotecaApp.showMainView();
+    }
+
+    public void showMainView() {
+        mainView.showPromptMessage(WECLOME_APP);
+        mainView.printMainView(APP_NAME);
+        while (inputSource.hasInput()) {
+            String choose = inputSource.getInput();
+            if (choose.equals("q")) {
+                break;
+            }
+            selectChioce(choose);
+        }
+    }
+
+    public void selectChioce(String choose) {
+        switch (choose) {
+            case "1":
+                mainView.showBookListInfo(bookList);
+                break;
+            case "2":
+                borrowBook();
+                break;
+            case "3":
+                returnBook();
+                break;
+            case "4":
+                mainView.showMovieListInfo(this.movieList);
+                break;
+            case "5":
+                watchMovie();
+                break;
+            default:
+                mainView.showPromptMessage(UNVAILD_CHOOSE);
+                break;
+        }
+    }
+
+    public void watchMovie() {
+        mainView.showPromptMessage(INPUT_MOVIE_ID);
+        Integer chooseToWatch = Integer.parseInt(inputSource.getInput());
+        movieList.stream().filter(movie -> movie.getId().equals(chooseToWatch))
+                .forEach(movie -> mainView.showPromptMessage(movie.movie_info()));
+    }
+
+    public void borrowBook() {
+        mainView.showPromptMessage(INPUT_BOOK_ID);
+        Integer chooseToBorrowId = Integer.parseInt(inputSource.getInput());
+        Optional<List<Book>>  borrowBookFromBookList = getBorrowBookFromBookList(chooseToBorrowId);
+        if (borrowBookFromBookList.isPresent()) {
+            mainView.showPromptMessage(BOOK_STATUS_INVAILD);
+            return;
+        }
+        setBookIsBorrowed(borrowBookFromBookList.get().get(0));
+    }
+
+    public void setBookIsBorrowed(Book borrowedBook) {
+        setBookStatus(borrowedBook,true);
+        mainView.showPromptMessage(THANKS_BORROW_BOOK);
+    }
+
+    public Optional<List<Book>> getBorrowBookFromBookList(Integer bookId) {
+        Optional<List<Book>> borrowingBook = Optional.of(bookList.stream().filter((book) ->
+                !book.isBorrowed && book.getId().equals(bookId)).collect(Collectors.toList()));
+        return borrowingBook;
+    }
+
+    public void returnBook() {
+        mainView.showPromptMessage(INPUT_BOOK_ID);
+        Integer chooseToReturnId = Integer.parseInt(inputSource.getInput());
+        Optional<List<Book>> returnBook = getReturnBookFromBookList(chooseToReturnId);
+        if (returnBook.get().isEmpty()) {
+            mainView.showPromptMessage(BOOK_RETURN_INVALID);
+            return;
+        }
+        setBookIsReturn(returnBook.get().get(0));
+    }
+
+    public void setBookIsReturn(Book returnBook) {
+        setBookStatus(returnBook,false);
+        mainView.showPromptMessage(THANKS_RETURN_BOOK);
+    }
+    public void setBookStatus(Book dealBook,boolean status){
+        bookList = bookList.stream().map(book ->{
+            if(book.getId().equals(dealBook.getId())){
+                book.isBorrowed = status;
+            }
+            return book;
+        }).collect(Collectors.toList());
+    }
+
+    public Optional<List<Book>> getReturnBookFromBookList(Integer borrowedBookId) {
+        List<Book> collect = bookList.stream().filter(book -> book.isBorrowed && book.getId().equals(borrowedBookId))
+                .collect(Collectors.toList());
+        Optional<List<Book>> returnBook = Optional.ofNullable(collect);
+        return returnBook;
     }
 
     public List<Book> getBookList() {
         return bookList;
     }
 
-    public void main_view(Scanner scanner){
-        main_view_print();
-        while (scanner.hasNext()){
-            String choose = scanner.next();
-            if(choose.equals("q")){
-                break;
-            }
-            select_chioce(choose);
-        }
-    }
-    public void main_view_print(){
-        System.out.println("--------------Biblioteca------------");
-        System.out.println("1.查看书籍列表");
-        System.out.println("2.借书");
-        System.out.println("3.还书");
+    public List<Movie> getMovieList() {
+        return movieList;
     }
 
-    public void select_chioce(String choose){
-       switch (choose){
-           case "1":bookListInfo();break;
-           case "2":lentBook();break;
-           case "3":backBook();break;
-           default:
-               System.out.println("Select a valid option!");
-               break;
-       }
-    }
-    public void lentBook() {
-        Scanner scanner=new Scanner(System.in);
-        System.out.println("请输入书id");
-        String choose = scanner.next();
-        List<Book> books = bookList.stream().filter((book)-> !book.isBook() && book.getId().toString().equals(choose)).collect(Collectors.toList());
-        if(books.isEmpty()) {
-            System.out.println("那本书不可用");
-            return;
-        }
-        Book isBook =books.get(0);
-        for(int i=0;i<bookList.size();i++){
-            if(bookList.get(i).getId()==isBook.getId()){
-                System.out.println("谢谢你！");
-                bookList.get(i).setBook(true);
-            }
-
-        }
-
-    }
-    public void backBook(){
-        Scanner scanner=new Scanner(System.in);
-        System.out.println("请输入书id");
-        String choose = scanner.next();
-        boolean index = false;
-        for(int i=0;i<bookList.size();i++){
-            if(bookList.get(i).getId()==Integer.parseInt(choose)&&bookList.get(i).isBook()){
-                System.out.println("感谢您退回图书！");
-                bookList.get(i).setBook(false);
-                index=true;
-            }
-        }
-        if(!index){
-            System.out.println("这不是一本有效的图书就可以返回");
-        }
+    public void initBookList() {
+        bookList.add(new Book(1, "Lolita", "Kofe", "04:30 PM, Sat 5/12/2018"));
+        bookList.add(new Book(2, "A Midsummer Night's Dream", "Shakespeare", "04:30 PM, Sat 5/12/2018"));
+        bookList.add(new Book(3, "The Old Man and the Sea", " Hemingway", "04:30 PM, Sat 5/12/2018"));
+        bookList.add(new Book(4, "Pickwick Papers", "Charles Dickens", "04:30 PM, Sat 5/12/2018"));
+        bookList.add(new Book(5, "The Red and the Black", "Stendhal", "04:30 PM, Sat 5/12/2018"));
     }
 
-    public String weclome_info(){
-        String weclome ="Weclome to Biblioteca!";
-        return weclome;
+    public void initMovieList() {
+        movieList.add(new Movie(1, "The Shawshank Redemption", "1994", "Frank Darabont", 9));
+        movieList.add(new Movie(2, "Million Dollar Baby", " 2004", "Clint Eastwood", 8));
+        movieList.add(new Movie(3, "The chaperone", "2011", "Stephen Herek", 7));
+        movieList.add(new Movie(4, "schindler's list", "1993", "Steven Spielberg", 8));
+        movieList.add(new Movie(5, "the lord of the rings", "1937", "Tolkien", 8));
     }
 
-    public void initBookList(){
-        bookList.add(new Book(1,"Lolita","Kofe","04:30 PM, Sat 5/12/2018"));
-        bookList.add(new Book(2,"A Midsummer Night's Dream","Shakespeare","04:30 PM, Sat 5/12/2018"));
-        bookList.add(new Book(3,"The Old Man and the Sea"," Hemingway","04:30 PM, Sat 5/12/2018"));
-        bookList.add(new Book(4,"Pickwick Papers","Charles Dickens","04:30 PM, Sat 5/12/2018"));
-        bookList.add(new Book(5,"The Red and the Black","Stendhal","04:30 PM, Sat 5/12/2018"));
-    }
-    public void bookListInfo(){
-        bookList.stream().forEach(book-> {
-            if(!book.isBook()) {
-                System.out.println(book.book_info());
-            }
-        });
-    }
 
 }
